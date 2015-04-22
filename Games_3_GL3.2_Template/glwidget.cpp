@@ -92,7 +92,7 @@ void GLWidget::paintGL()
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // Draw stuff
-    glDrawArrays( GL_TRIANGLES, 0, 3 );
+    glDrawArrays( GL_POINTS, 0, 3 );
 }
 
 void GLWidget::keyPressEvent( QKeyEvent* e )
