@@ -7,10 +7,8 @@
 
 using namespace std;
 
-vector<triangle> triangles;
-unsigned long numTriangles;
-
 stlModel::stlModel(string filename){
+    numTriangles = 0;
     ifstream infile(filename, ios::in|ios::binary);
     
     char* headerBuff = new char[80];
@@ -23,8 +21,9 @@ stlModel::stlModel(string filename){
     delete[] numTrianglesBuff;
     
     cout << "numTris " << numTriangles << endl;
-    
-    for(int i = 0; i < numTriangles; i++){
+    points = new float[120 * 9];
+    int c = 0;
+    for(int i = 0; i < 120; i++){
          char* normalBuff = new char[12];
          infile.read(normalBuff, 12);
          
@@ -55,6 +54,17 @@ stlModel::stlModel(string filename){
          
          triangles.push_back(t);
          
+         points[c] = v1[0];
+         points[c+1] = v1[1];
+         points[c+2] = v1[2];
+         points[c+3] = v2[0];
+         points[c+4] = v2[1];
+         points[c+5] = v2[2];
+         points[c+6] = v3[0];
+         points[c+7] = v3[1];
+         points[c+8] = v3[2];
+         c+=9;
+         
          char* attribBuff = new char[2];
          infile.read(attribBuff, 2);
          
@@ -65,16 +75,20 @@ stlModel::stlModel(string filename){
          delete[] attribBuff;
     }
     
-    for(auto tri = triangles.begin(); tri < triangles.begin() + 10; ++tri){
-        cout << "v1: " << (*tri).vert1[0] << " " << (*tri).vert1[1] << " " << (*tri).vert1[2] << " " << endl;
-        cout << "v2: " << (*tri).vert2[0] << " " << (*tri).vert2[1] << " " << (*tri).vert2[2] << " " << endl;
-        cout << "v3: " << (*tri).vert3[0] << " " << (*tri).vert3[1] << " " << (*tri).vert3[2] << " " << endl;
-        cout << "-------------------------------" << endl;
-    }
+//    c=0;
+//    for(auto tri = triangles.begin(); tri < triangles.begin() + 10; ++tri){
+//        cout << "v1: " << (*tri).vert1[0] << " " << (*tri).vert1[1] << " " << (*tri).vert1[2] << " " << endl;
+//        cout << "pointsv1: " << points[c] << " " << points[c+1] << " " << points[c+2] << " " << endl;
+//        cout << "v2: " << (*tri).vert2[0] << " " << (*tri).vert2[1] << " " << (*tri).vert2[2] << " " << endl;
+//        cout << "v3: " << (*tri).vert3[0] << " " << (*tri).vert3[1] << " " << (*tri).vert3[2] << " " << endl;
+//        c+=9;
+//        cout << "-------------------------------" << endl;
+//    }
     
     infile.close();
 }
 
-int main(int argc, char* argv[]){
-    stlModel r("bunny.stl");
-}
+//int main(int argc, char* argv[]){
+//stlModel bunny("bunny.stl");
+//return 0;
+//}

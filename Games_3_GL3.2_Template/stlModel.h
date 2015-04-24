@@ -12,6 +12,9 @@ struct triangle{
 
 class stlModel{
     public:
+        std::vector<triangle> triangles;
+        unsigned long numTriangles;
+        float * points;
         stlModel(std::string filename);
 };
 #endif

@@ -4,6 +4,8 @@
 #include <QKeyEvent>
 #include <stdexcept>
 
+#include "stlModel.h"
+
 #define VERT_SHADER ":/simple.vert"
 #define FRAG_SHADER ":/simple.frag"
 
@@ -48,9 +50,30 @@ void GLWidget::initializeGL()
     glBindVertexArray(VAO);
 
     // We need us some vertex data. Start simple with a triangle ;-)
-    float points[] = { -0.5f, -0.5f, 0.0f, 1.0f,
-                        0.5f, -0.5f, 0.0f, 1.0f,
-                        0.0f,  0.5f, 0.0f, 1.0f };
+    stlModel bunny("bunny.stl");
+    float* points = bunny.points;
+//    int c = 0;
+//    for(auto tri = bunny.triangles.begin(); tri < bunny.triangles.begin() + 120; ++tri){
+//        points[c] = (*tri).vert1[0];
+//        points[c+1] = (*tri).vert1[1];
+//        points[c+2] = (*tri).vert1[2];
+//        c+=3;
+//        points[c] = (*tri).vert2[0];
+//        points[c+1] = (*tri).vert2[1];
+//        points[c+2] = (*tri).vert2[2];
+//        c+=3;
+//        points[c] = (*tri).vert3[0];
+//        points[c+1] = (*tri).vert3[1];
+//        points[c+2] = (*tri).vert3[2];
+//        c+=3;
+//    }
+//    for(int i = 0; i < 120*9; i++){
+//        qDebug() << points[i];
+//    }
+//    float points[] = { -0.5f, -0.5f, 0.0f, 1.0f,
+//                        0.5f, -0.5f, 0.0f, 1.0f,
+//                        0.0f,  0.5f, 0.0f, 1.0f };
+
     m_vertexBuffer.create();
     m_vertexBuffer.setUsagePattern( QOpenGLBuffer::StaticDraw );
     if ( !m_vertexBuffer.bind() )
@@ -58,7 +81,7 @@ void GLWidget::initializeGL()
         qWarning() << "Could not bind vertex buffer to the context";
         return;
     }
-    m_vertexBuffer.allocate( points, 3 * 4 * sizeof( float ) );
+    m_vertexBuffer.allocate( points, 120 * 9 * sizeof( float ) );
 
     qDebug() << "Attempting vertex shader load from " << VERT_SHADER;
     qDebug() << "Attempting fragment shader load from " << FRAG_SHADER;
@@ -92,7 +115,7 @@ void GLWidget::paintGL()
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // Draw stuff
-    glDrawArrays( GL_POINTS, 0, 3 );
+    glDrawArrays( GL_TRIANGLES, 0, 120*9);
 }
 
 void GLWidget::keyPressEvent( QKeyEvent* e )
