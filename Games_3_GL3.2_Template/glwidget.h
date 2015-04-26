@@ -7,6 +7,8 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 
+#include <string>
+
 #include "stlModel.h"
 
 class GLWidget : public QGLWidget
@@ -14,6 +16,10 @@ class GLWidget : public QGLWidget
     Q_OBJECT
 public:
     GLWidget( const QGLFormat& format, QWidget* parent = 0 );
+
+public slots:
+    bool handle_open_clicked();
+    bool handle_reset_clicked();
 
 protected:
     virtual void initializeGL();
@@ -31,6 +37,7 @@ private:
     stlModel model;
     float red, green, blue;
     void setRenderColor(int opt);
+    std::string model_filename;
 };
 
 #endif // GLWIDGET_H

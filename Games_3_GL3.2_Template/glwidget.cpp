@@ -9,17 +9,62 @@
 #include <QCoreApplication>
 #include <QKeyEvent>
 #include <stdexcept>
+#include <QMenuBar>
+#include <QFileDialog>
 
 #define VERT_SHADER ":/simple.vert"
 #define FRAG_SHADER ":/simple.frag"
+
+QMenuBar* mainMenu;
+QMenu* fileMenu;
+QAction* openAction;
+QAction* resetAction;
 
 GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
     : QGLWidget( format, parent ),
       m_vertexBuffer( QOpenGLBuffer::VertexBuffer ),
       red(1.0f),
       green(0.0f),
-      blue(0.0f)
+      blue(0.0f),
+      model_filename("bunny.stl")
 {
+    mainMenu = new QMenuBar(this);
+    fileMenu = new QMenu("File");
+    openAction = fileMenu->addAction("Open");
+    QObject::connect(openAction, SIGNAL(triggered()), this, SLOT(handle_open_clicked()));
+    resetAction = fileMenu->addAction("New/Reset");
+    QObject::connect(resetAction, SIGNAL(triggered()), this, SLOT(handle_reset_clicked()));
+    mainMenu->addMenu(fileMenu);
+}
+
+bool GLWidget::handle_open_clicked(){
+    //TODO: IS THIS ACTUALLY WORKING???
+    std::cout << "open clicked" << std::endl;
+
+    std::string filename = QFileDialog::getOpenFileName(this, tr("Open stl model"), "~", "Stl files (*.stl);;All files (*.*)").toStdString();
+    std::cout << filename << std::endl;
+    model_filename = filename;
+    model.read(model_filename);
+    float* points = model.points;
+
+    m_vertexBuffer.create();
+    m_vertexBuffer.setUsagePattern( QOpenGLBuffer::StaticDraw );
+    if ( !m_vertexBuffer.bind() )
+    {
+        qWarning() << "Could not bind vertex buffer to the context";
+        return false;
+    }
+    m_vertexBuffer.allocate( points, model.numTriangles * 3 * 4 * sizeof( float ) );
+
+    updateGL();
+    return true;
+}
+
+bool GLWidget::handle_reset_clicked(){
+    //TODO: Actually implement this
+    std::cout << "reset clicked" << std::endl;
+
+    return true;
 }
 
 void GLWidget::initializeGL()
@@ -57,10 +102,7 @@ void GLWidget::initializeGL()
     glBindVertexArray(VAO);
 
     // We need us some vertex data. Start simple with a triangle ;-)
-//    float points[] = { -0.5f, -0.5f, 0.0f, 1.0f,
-//                        0.5f, -0.5f, 0.0f, 1.0f,
-//                        0.0f,  0.5f, 0.0f, 1.0f };
-    model.read("bunny.stl");
+    model.read(model_filename);
     float* points = model.points;
 
     m_vertexBuffer.create();
