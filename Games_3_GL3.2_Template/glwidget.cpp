@@ -1,13 +1,16 @@
 #include "glwidget.h"
+#include "stlModel.h"
+
+#include <iostream>
 
 #include <QCoreApplication>
 #include <QKeyEvent>
 #include <stdexcept>
 
-#include "stlModel.h"
-
 #define VERT_SHADER ":/simple.vert"
 #define FRAG_SHADER ":/simple.frag"
+
+stlModel model;
 
 GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
     : QGLWidget( format, parent ),
@@ -17,6 +20,14 @@ GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
 
 void GLWidget::initializeGL()
 {
+//    for(int i = 0; i < bunny.numTriangles * 12; i+=12){
+//    //int i = (bunny.numTriangles-1) -12;
+//        std::cout << "v1: " << bunny.points[i] << " " << bunny.points[i+1] << " " << bunny.points[i+2] << " " << bunny.points[i+3] << std::endl;
+//        std::cout << "v2: " << bunny.points[i+4] << " " << bunny.points[i+5] << " " << bunny.points[i+6] << " " << bunny.points[i+7] << std::endl;
+//        std::cout << "v3: " << bunny.points[i+8] << " " << bunny.points[i+9] << " " << bunny.points[i+10] << " " << bunny.points[i+11] << std::endl;
+//        std::cout << "_________________________________________________________________" << std::endl;
+//    }
+
     // Resolve OpenGL functions
     glewExperimental = true;
     GLenum GlewInitResult = glewInit();
@@ -50,29 +61,11 @@ void GLWidget::initializeGL()
     glBindVertexArray(VAO);
 
     // We need us some vertex data. Start simple with a triangle ;-)
-    stlModel bunny("bunny.stl");
-    float* points = bunny.points;
-//    int c = 0;
-//    for(auto tri = bunny.triangles.begin(); tri < bunny.triangles.begin() + 120; ++tri){
-//        points[c] = (*tri).vert1[0];
-//        points[c+1] = (*tri).vert1[1];
-//        points[c+2] = (*tri).vert1[2];
-//        c+=3;
-//        points[c] = (*tri).vert2[0];
-//        points[c+1] = (*tri).vert2[1];
-//        points[c+2] = (*tri).vert2[2];
-//        c+=3;
-//        points[c] = (*tri).vert3[0];
-//        points[c+1] = (*tri).vert3[1];
-//        points[c+2] = (*tri).vert3[2];
-//        c+=3;
-//    }
-//    for(int i = 0; i < 120*9; i++){
-//        qDebug() << points[i];
-//    }
 //    float points[] = { -0.5f, -0.5f, 0.0f, 1.0f,
 //                        0.5f, -0.5f, 0.0f, 1.0f,
 //                        0.0f,  0.5f, 0.0f, 1.0f };
+    model.read("bunny.stl");
+    float* points = model.points;
 
     m_vertexBuffer.create();
     m_vertexBuffer.setUsagePattern( QOpenGLBuffer::StaticDraw );
@@ -81,7 +74,7 @@ void GLWidget::initializeGL()
         qWarning() << "Could not bind vertex buffer to the context";
         return;
     }
-    m_vertexBuffer.allocate( points, 120 * 9 * sizeof( float ) );
+    m_vertexBuffer.allocate( points, model.numTriangles * 4 * sizeof( float ) );
 
     qDebug() << "Attempting vertex shader load from " << VERT_SHADER;
     qDebug() << "Attempting fragment shader load from " << FRAG_SHADER;
@@ -115,7 +108,7 @@ void GLWidget::paintGL()
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // Draw stuff
-    glDrawArrays( GL_TRIANGLES, 0, 120*9);
+    glDrawArrays( GL_TRIANGLES, 0,  model.numTriangles);
 }
 
 void GLWidget::keyPressEvent( QKeyEvent* e )
