@@ -1,6 +1,7 @@
 #include "glwidget.h"
 #include "stlModel.h"
 #include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 
@@ -88,6 +89,24 @@ void GLWidget::initializeGL()
     m_shader.setAttributeBuffer( "vertex", GL_FLOAT, 0, 4 );
     m_shader.enableAttributeArray( "vertex" );
     glUniform4f(glGetUniformLocation(m_shader.programId(),"fcolor"), red, green, blue, 1.0f);
+
+    glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+
+    glm::vec3 eye(0, 0, 2);
+    glm::vec3 center(0, 0, 0);
+    glm::vec3 up(0, 1, 0);
+    glm::mat4 view = glm::lookAt(eye, center, up);
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+    glm::mat4 MVP = projection * view * model;
+    for(int r = 0; r < 4; r++){
+        for(int c = 0; c < 4; c++){
+            std::cout << MVP[r][c] << " ";
+        }
+        std::cout << std::endl;
+    }
+    glUniformMatrix4fv(glGetUniformLocation(m_shader.programId(),"MVP"), 1, GL_FALSE, &MVP[0][0]);
 }
 
 void GLWidget::resizeGL( int w, int h )
