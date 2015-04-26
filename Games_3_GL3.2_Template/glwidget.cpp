@@ -2,6 +2,7 @@
 #include "stlModel.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/transform.hpp"
 
 #include <iostream>
 
@@ -98,6 +99,18 @@ void GLWidget::initializeGL()
     glm::mat4 view = glm::lookAt(eye, center, up);
 
     glm::mat4 model = glm::mat4(1.0f);
+
+    glm::vec3 translation(0.0f, -1.0f, 0.0f);
+    glm::mat4 transMat = glm::translate(model, translation);
+
+    glm::vec3 rotAxis(0.0f, 0.0f, 1.0f);
+    glm::mat4 rotMat = glm::rotate(model, 0.0f, rotAxis);
+
+    glm::vec3 scaleFact(10.0f, 10.0f, 10.0f);
+    glm::mat4 scaleMat = glm::scale(model, scaleFact);
+
+    model = transMat * rotMat * scaleMat;
+
 
     glm::mat4 MVP = projection * view * model;
     for(int r = 0; r < 4; r++){
