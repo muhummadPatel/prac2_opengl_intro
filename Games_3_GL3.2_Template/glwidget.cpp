@@ -1,5 +1,6 @@
 #include "glwidget.h"
 #include "stlModel.h"
+#include "glm/glm.hpp"
 
 #include <iostream>
 
@@ -10,24 +11,17 @@
 #define VERT_SHADER ":/simple.vert"
 #define FRAG_SHADER ":/simple.frag"
 
-stlModel model;
-
 GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
     : QGLWidget( format, parent ),
-      m_vertexBuffer( QOpenGLBuffer::VertexBuffer )
+      m_vertexBuffer( QOpenGLBuffer::VertexBuffer ),
+      red(1.0f),
+      green(0.0f),
+      blue(0.0f)
 {
 }
 
 void GLWidget::initializeGL()
 {
-//    for(int i = 0; i < bunny.numTriangles * 12; i+=12){
-//    //int i = (bunny.numTriangles-1) -12;
-//        std::cout << "v1: " << bunny.points[i] << " " << bunny.points[i+1] << " " << bunny.points[i+2] << " " << bunny.points[i+3] << std::endl;
-//        std::cout << "v2: " << bunny.points[i+4] << " " << bunny.points[i+5] << " " << bunny.points[i+6] << " " << bunny.points[i+7] << std::endl;
-//        std::cout << "v3: " << bunny.points[i+8] << " " << bunny.points[i+9] << " " << bunny.points[i+10] << " " << bunny.points[i+11] << std::endl;
-//        std::cout << "_________________________________________________________________" << std::endl;
-//    }
-
     // Resolve OpenGL functions
     glewExperimental = true;
     GLenum GlewInitResult = glewInit();
@@ -74,7 +68,7 @@ void GLWidget::initializeGL()
         qWarning() << "Could not bind vertex buffer to the context";
         return;
     }
-    m_vertexBuffer.allocate( points, model.numTriangles * 4 * sizeof( float ) );
+    m_vertexBuffer.allocate( points, model.numTriangles * 3 * 4 * sizeof( float ) );
 
     qDebug() << "Attempting vertex shader load from " << VERT_SHADER;
     qDebug() << "Attempting fragment shader load from " << FRAG_SHADER;
@@ -93,11 +87,12 @@ void GLWidget::initializeGL()
     // vertex buffer.
     m_shader.setAttributeBuffer( "vertex", GL_FLOAT, 0, 4 );
     m_shader.enableAttributeArray( "vertex" );
-    glUniform4f(glGetUniformLocation(m_shader.programId(),"fcolor"),0.0f,1.0f,0.0f,1.0f);
+    glUniform4f(glGetUniformLocation(m_shader.programId(),"fcolor"), red, green, blue, 1.0f);
 }
 
 void GLWidget::resizeGL( int w, int h )
 {
+    //std::cout << "RESIZE" << std::endl;
     // Set the viewport to window dimensions
     glViewport( 0, 0, w, qMax( h, 1 ) );
 }
@@ -106,9 +101,11 @@ void GLWidget::paintGL()
 {
     // Clear the buffer with the current clearing color
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    //glColor3f(red, green, blue);
+    //std::cout << "PAINTING" << std::endl;
 
     // Draw stuff
-    glDrawArrays( GL_TRIANGLES, 0,  model.numTriangles);
+    glDrawArrays( GL_TRIANGLES, 0,  model.numTriangles * 3);
 }
 
 void GLWidget::keyPressEvent( QKeyEvent* e )
@@ -119,9 +116,74 @@ void GLWidget::keyPressEvent( QKeyEvent* e )
             QCoreApplication::instance()->quit();
             break;
 
+        case Qt::Key_1:
+            std::cout << "change col 1" << std::endl;
+            setRenderColor(1);
+            break;
+
+        case Qt::Key_2:
+            std::cout << "change col 2" << std::endl;
+            setRenderColor(2);
+            break;
+
+        case Qt::Key_3:
+            std::cout << "change col 3" << std::endl;
+            setRenderColor(3);
+            break;
+
+        case Qt::Key_4:
+            std::cout << "change col 4" << std::endl;
+            setRenderColor(4);
+            break;
+
+        case Qt::Key_5:
+            std::cout << "change col 5" << std::endl;
+            setRenderColor(5);
+            break;
+
         default:
             QGLWidget::keyPressEvent( e );
     }
+}
+
+void GLWidget::setRenderColor(int opt){
+    switch(opt){
+        case 1:
+            //red
+            red = 1.0f;
+            blue = green = 0.0f;
+            break;
+
+        case 2:
+            //green
+            green = 1.0f;
+            blue = red = 0.0f;
+            break;
+
+        case 3:
+            //blue
+            blue = 1.0f;
+            red = green = 0.0f;
+            break;
+
+        case 4:
+            //yellow
+            red = green = 1.0f;
+            blue = 0.0f;
+            break;
+        case 5:
+            //magenta
+            red = blue = 1.0f;
+            green = 0.0f;
+            break;
+
+        default:
+            //red
+            setRenderColor(1);
+    }
+
+    glUniform4f(glGetUniformLocation(m_shader.programId(),"fcolor"), red, green, blue,1.0f);
+    updateGL();
 }
 
 bool GLWidget::prepareShaderProgram( const QString& vertexShaderPath,

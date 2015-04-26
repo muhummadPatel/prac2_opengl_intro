@@ -7,6 +7,8 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 
+#include "stlModel.h"
+
 class GLWidget : public QGLWidget
 {
     Q_OBJECT
@@ -26,6 +28,9 @@ private:
 
     QOpenGLShaderProgram m_shader;
     QOpenGLBuffer m_vertexBuffer;
+    stlModel model;
+    float red, green, blue;
+    void setRenderColor(int opt);
 };
 
 #endif // GLWIDGET_H
