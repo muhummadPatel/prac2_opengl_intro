@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <QMenuBar>
 #include <QFileDialog>
+#include <QLabel>
 
 #define VERT_SHADER ":/simple.vert"
 #define FRAG_SHADER ":/simple.frag"
@@ -19,6 +20,7 @@ QMenuBar* mainMenu;
 QMenu* fileMenu;
 QAction* openAction;
 QAction* resetAction;
+QLabel* modeLabel;
 
 GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
     : QGLWidget( format, parent ),
