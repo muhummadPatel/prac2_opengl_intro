@@ -19,6 +19,7 @@ public:
     GLWidget( const QGLFormat& format, QWidget* parent = 0 );
 
 public slots:
+    //slots to handle QT events
     bool handle_open_clicked();
     bool handle_reset_clicked();
     void wheelEvent(QWheelEvent * evt);
@@ -33,20 +34,27 @@ protected:
 private:
     bool prepareShaderProgram( const QString& vertexShaderPath,
                                const QString& fragmentShaderPath );
-
     QOpenGLShaderProgram m_shader;
     QOpenGLBuffer m_vertexBuffer;
+
+    //model related members
     stlModel model;
+    std::string model_filename;
+    void loadModel();
+
+    //members used to allow for colour changing
     float red, green, blue;
     void setRenderColor(int opt);
-    void updateMVP();
-    void loadModel();
+
+    //used to keep track of which transformation and on which axis
+    void incrementActiveAxis();
+    void incrementActiveTransformation();
+
+    //used to generate model matrix and upload MVP matrix to shader
     void translateModel(glm::vec3 translation);
     void rotateModel(glm::vec3 rotationAxis, float degrees);
     void scaleModel(glm::vec3 scaleFactor);
-    void incrementActiveAxis();
-    void incrementActiveTransformation();
-    std::string model_filename;
+    void updateMVP();
 };
 
 #endif // GLWIDGET_H
