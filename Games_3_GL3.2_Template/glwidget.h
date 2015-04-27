@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "glm/glm.hpp"
 #include "stlModel.h"
 
 class GLWidget : public QGLWidget
@@ -20,6 +21,7 @@ public:
 public slots:
     bool handle_open_clicked();
     bool handle_reset_clicked();
+    void wheelEvent(QWheelEvent * evt);
 
 protected:
     virtual void initializeGL();
@@ -37,6 +39,12 @@ private:
     stlModel model;
     float red, green, blue;
     void setRenderColor(int opt);
+    void updateMVP();
+    void translateModel(glm::vec3 translation);
+    void rotateModel(glm::vec3 rotationAxis, float degrees);
+    void scaleModel(glm::vec3 scaleFactor);
+    void incrementActiveAxis();
+    void incrementActiveTransformation();
     std::string model_filename;
 };
 

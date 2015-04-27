@@ -22,6 +22,16 @@ QAction* openAction;
 QAction* resetAction;
 QLabel* modeLabel;
 
+float transStep = 0.2f;
+float rotStep = 12.0f;
+float scaleStep = 0.5f;
+
+glm::mat4 translationMat, rotationMat, scaleMat;
+glm::mat4 modelMat, view, projection;
+
+GLuint activeAxis = 0; //x=0, y=1, z=2
+GLuint activeTransformation = 0; //translate=0, rotate=1, scale=2
+
 GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
     : QGLWidget( format, parent ),
       m_vertexBuffer( QOpenGLBuffer::VertexBuffer ),
@@ -43,22 +53,6 @@ bool GLWidget::handle_open_clicked(){
     //TODO: IS THIS ACTUALLY WORKING???
     std::cout << "open clicked" << std::endl;
 
-    std::string filename = QFileDialog::getOpenFileName(this, tr("Open stl model"), "~", "Stl files (*.stl);;All files (*.*)").toStdString();
-    std::cout << filename << std::endl;
-    model_filename = filename;
-    model.read(model_filename);
-    float* points = model.points;
-
-    m_vertexBuffer.create();
-    m_vertexBuffer.setUsagePattern( QOpenGLBuffer::StaticDraw );
-    if ( !m_vertexBuffer.bind() )
-    {
-        qWarning() << "Could not bind vertex buffer to the context";
-        return false;
-    }
-    m_vertexBuffer.allocate( points, model.numTriangles * 3 * 4 * sizeof( float ) );
-
-    updateGL();
     return true;
 }
 
@@ -69,8 +63,50 @@ bool GLWidget::handle_reset_clicked(){
     return true;
 }
 
-void GLWidget::initializeGL()
-{
+void GLWidget::wheelEvent(QWheelEvent * evt){
+    int delta = evt->delta();
+    int dir = glm::abs(delta) / delta; //gets +1 or -1 based on direction scrolling
+    //std::cout << dir << std::endl;
+
+    switch(activeTransformation){
+        //translation
+        case 0:
+            if(activeAxis == 0){
+                translateModel(glm::vec3(dir * transStep, 0.0f, 0.0f));
+            }else if(activeAxis == 1){
+                translateModel(glm::vec3(0.0f, dir * transStep, 0.0f));
+            }else{
+                translateModel(glm::vec3(0.0f, 0.0f, dir * transStep));
+            }
+            break;
+
+        //rotate
+        case 1:
+            if(activeAxis == 0){
+                rotateModel(glm::vec3(1.0f, 0.0f, 0.0f), dir * rotStep);
+            }else if(activeAxis == 1){
+                rotateModel(glm::vec3(0.0f, 1.0f, 0.0f), dir * rotStep);
+            }else{
+                rotateModel(glm::vec3(0.0f, 0.0f, 1.0f), dir * rotStep);
+            }
+            break;
+
+        //scale
+        case 2:
+            if(activeAxis == 0){
+                scaleModel(glm::vec3((dir * scaleStep) + 1.0f, 1.0f, 1.0f));
+            }else if (activeAxis == 1){
+                scaleModel(glm::vec3(1.0f, (dir * scaleStep) + 1.0f, 1.0f));
+            }else{
+                scaleModel(glm::vec3(1.0f, 1.0f, (dir * scaleStep) + 1.0f));
+            }
+
+    }
+
+    updateGL();
+}
+
+void GLWidget::initializeGL(){
     // Resolve OpenGL functions
     glewExperimental = true;
     GLenum GlewInitResult = glewInit();
@@ -133,36 +169,48 @@ void GLWidget::initializeGL()
     // vertex buffer.
     m_shader.setAttributeBuffer( "vertex", GL_FLOAT, 0, 4 );
     m_shader.enableAttributeArray( "vertex" );
-    glUniform4f(glGetUniformLocation(m_shader.programId(),"fcolor"), red, green, blue, 1.0f);
+    setRenderColor(1);
 
-    glm::mat4 projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+    //set up the projection matrix (perspective projection for our 3d models)
+    projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 
+    //set up the view matrix (the "camera")
     glm::vec3 eye(0, 0, 2);
     glm::vec3 center(0, 0, 0);
     glm::vec3 up(0, 1, 0);
-    glm::mat4 view = glm::lookAt(eye, center, up);
+    view = glm::lookAt(eye, center, up);
 
-    glm::mat4 model = glm::mat4(1.0f);
+    //set up the model matrices (initialise all transformation matrices to id matrix)
+    translationMat = glm::mat4(1.0f);
+    rotationMat = glm::mat4(1.0f);
+    scaleMat = glm::mat4(1.0f);
 
-    glm::vec3 translation(0.0f, -1.0f, 0.0f);
-    glm::mat4 transMat = glm::translate(model, translation);
+    //create MVP matrix ad push it to the vertex shader
+    updateMVP();
+}
 
-    glm::vec3 rotAxis(0.0f, 0.0f, 1.0f);
-    glm::mat4 rotMat = glm::rotate(model, 0.0f, rotAxis);
+void GLWidget::translateModel(glm::vec3 translation){
+    translationMat = glm::translate(translationMat, translation);
 
-    glm::vec3 scaleFact(10.0f, 10.0f, 10.0f);
-    glm::mat4 scaleMat = glm::scale(model, scaleFact);
+    updateMVP();
+}
 
-    model = transMat * rotMat * scaleMat;
+void GLWidget::rotateModel(glm::vec3 rotationAxis, float degrees){
+    rotationMat = glm::rotate(rotationMat, degrees, rotationAxis);
 
+    updateMVP();
+}
 
-    glm::mat4 MVP = projection * view * model;
-    for(int r = 0; r < 4; r++){
-        for(int c = 0; c < 4; c++){
-            std::cout << MVP[r][c] << " ";
-        }
-        std::cout << std::endl;
-    }
+void GLWidget::scaleModel(glm::vec3 scaleFactor){
+    scaleMat = glm::scale(scaleMat, scaleFactor);
+
+    updateMVP();
+}
+
+void GLWidget::updateMVP(){
+    modelMat = translationMat * rotationMat * scaleMat;
+
+    glm::mat4 MVP = projection * view * modelMat;
     glUniformMatrix4fv(glGetUniformLocation(m_shader.programId(),"MVP"), 1, GL_FALSE, &MVP[0][0]);
 }
 
@@ -217,8 +265,40 @@ void GLWidget::keyPressEvent( QKeyEvent* e )
             setRenderColor(5);
             break;
 
+        case Qt::Key_T:
+            incrementActiveAxis();
+            activeTransformation = 0;
+            std::cout << "translate " << activeTransformation << " " << activeAxis << std::endl;
+            break;
+
+        case Qt::Key_R:
+            incrementActiveAxis();
+            activeTransformation = 1;
+            std::cout << "rotate " << activeTransformation << " " << activeAxis << std::endl;
+            break;
+
+        case Qt::Key_S:
+            incrementActiveAxis();
+            activeTransformation = 2;
+            std::cout << "scale " << activeTransformation << " " << activeAxis << std::endl;
+            break;
+
         default:
             QGLWidget::keyPressEvent( e );
+    }
+}
+
+void GLWidget::incrementActiveAxis(){
+    activeAxis++;
+    if(activeAxis > 2){
+        activeAxis = 0;
+    }
+}
+
+void GLWidget::incrementActiveTransformation(){
+    activeTransformation++;
+    if(activeTransformation > 2){
+        activeTransformation = 0;
     }
 }
 
