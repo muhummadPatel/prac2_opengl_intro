@@ -40,7 +40,7 @@ GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
       red(1.0f),
       green(0.0f),
       blue(0.0f),
-      model_filename("bunny.stl")
+      model_filename("")
 {
     mainMenu = new QMenuBar(this);
     fileMenu = new QMenu("File");
@@ -141,7 +141,9 @@ void GLWidget::initializeGL(){
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 
 
-    loadModel();
+    if(model_filename != ""){
+        loadModel();
+    }
 
 
     //set up the projection matrix (perspective projection for our 3d models)
