@@ -22,6 +22,8 @@ QAction* openAction;
 QAction* resetAction;
 QLabel* modeLabel;
 
+bool shadersLoaded = false;
+
 float transStep = 0.2f;
 float rotStep = 12.0f;
 float scaleStep = 0.5f;
@@ -52,6 +54,10 @@ GLWidget::GLWidget( const QGLFormat& format, QWidget* parent )
 bool GLWidget::handle_open_clicked(){
     //TODO: IS THIS ACTUALLY WORKING???
     std::cout << "open clicked" << std::endl;
+
+    model_filename = QFileDialog::getOpenFileName(this, tr("Open stl model"), "~", "Stl files (*.stl);;All files (*.*)").toStdString();
+    initializeGL();
+    std::cout << model_filename << std::endl;
 
     return true;
 }
@@ -134,6 +140,29 @@ void GLWidget::initializeGL(){
     // Set the clear color to black
     glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 
+
+    loadModel();
+
+
+    //set up the projection matrix (perspective projection for our 3d models)
+    projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+
+    //set up the view matrix (the "camera")
+    glm::vec3 eye(0, 0, 2);
+    glm::vec3 center(0, 0, 0);
+    glm::vec3 up(0, 1, 0);
+    view = glm::lookAt(eye, center, up);
+
+    //set up the model matrices (initialise all transformation matrices to id matrix)
+    translationMat = glm::mat4(1.0f);
+    rotationMat = glm::mat4(1.0f);
+    scaleMat = glm::mat4(1.0f);
+
+    //create MVP matrix ad push it to the vertex shader
+    updateMVP();
+}
+
+void GLWidget::loadModel(){
     // we need a VAO in core!
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
@@ -152,12 +181,18 @@ void GLWidget::initializeGL(){
     }
     m_vertexBuffer.allocate( points, model.numTriangles * 3 * 4 * sizeof( float ) );
 
-    qDebug() << "Attempting vertex shader load from " << VERT_SHADER;
-    qDebug() << "Attempting fragment shader load from " << FRAG_SHADER;
 
-    // Prepare a complete shader program...
-    if ( !prepareShaderProgram( VERT_SHADER, FRAG_SHADER) )
-        std::runtime_error("Failed to load shader");
+    if(!shadersLoaded){
+        qDebug() << "Attempting vertex shader load from " << VERT_SHADER;
+        qDebug() << "Attempting fragment shader load from " << FRAG_SHADER;
+
+        // Prepare a complete shader program...
+        if ( !prepareShaderProgram( VERT_SHADER, FRAG_SHADER) )
+            std::runtime_error("Failed to load shader");
+
+        shadersLoaded = true;
+    }
+
     // Bind the shader program so that we can associate variables from
     // our application to the shaders
     if ( !m_shader.bind() )
@@ -170,23 +205,6 @@ void GLWidget::initializeGL(){
     m_shader.setAttributeBuffer( "vertex", GL_FLOAT, 0, 4 );
     m_shader.enableAttributeArray( "vertex" );
     setRenderColor(1);
-
-    //set up the projection matrix (perspective projection for our 3d models)
-    projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-
-    //set up the view matrix (the "camera")
-    glm::vec3 eye(0, 0, 2);
-    glm::vec3 center(0, 0, 0);
-    glm::vec3 up(0, 1, 0);
-    view = glm::lookAt(eye, center, up);
-
-    //set up the model matrices (initialise all transformation matrices to id matrix)
-    translationMat = glm::mat4(1.0f);
-    rotationMat = glm::mat4(1.0f);
-    scaleMat = glm::mat4(1.0f);
-
-    //create MVP matrix ad push it to the vertex shader
-    updateMVP();
 }
 
 void GLWidget::translateModel(glm::vec3 translation){

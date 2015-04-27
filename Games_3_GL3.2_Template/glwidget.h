@@ -40,6 +40,7 @@ private:
     float red, green, blue;
     void setRenderColor(int opt);
     void updateMVP();
+    void loadModel();
     void translateModel(glm::vec3 translation);
     void rotateModel(glm::vec3 rotationAxis, float degrees);
     void scaleModel(glm::vec3 scaleFactor);
