@@ -55,7 +55,7 @@ bool GLWidget::handle_open_clicked(){
     //TODO: IS THIS ACTUALLY WORKING???
     std::cout << "open clicked" << std::endl;
 
-    model_filename = QFileDialog::getOpenFileName(this, tr("Open stl model"), "~", "Stl files (*.stl);;All files (*.*)").toStdString();
+    model_filename = QFileDialog::getOpenFileName(this, tr("Open stl model"), "/", "Stl files (*.stl);;All files (*.*)").toStdString();
     initializeGL();
     std::cout << model_filename << std::endl;
 
@@ -65,7 +65,7 @@ bool GLWidget::handle_open_clicked(){
 bool GLWidget::handle_reset_clicked(){
     //TODO: Actually implement this
     std::cout << "reset clicked" << std::endl;
-
+    initializeGL();
     return true;
 }
 
@@ -150,7 +150,7 @@ void GLWidget::initializeGL(){
     projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 
     //set up the view matrix (the "camera")
-    glm::vec3 eye(0, 0, 2);
+    glm::vec3 eye(0, 0, 5);
     glm::vec3 center(0, 0, 0);
     glm::vec3 up(0, 1, 0);
     view = glm::lookAt(eye, center, up);
@@ -232,6 +232,8 @@ void GLWidget::updateMVP(){
 
     glm::mat4 MVP = projection * view * modelMat;
     glUniformMatrix4fv(glGetUniformLocation(m_shader.programId(),"MVP"), 1, GL_FALSE, &MVP[0][0]);
+
+    updateGL();
 }
 
 void GLWidget::resizeGL( int w, int h )
