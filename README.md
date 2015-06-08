@@ -28,38 +28,38 @@ vector operations.
  rendered. You must choose an stl file to load. see below.\)  
  \(**ALSO NOTE**: please ensure the the glm folder is in the working directory\(by
  default this is the debug folder\)\)
- 
-* Loading a model:  
+
+* Loading a model:
     * when the program starts, there will be no model.
     * open the File menu in the menu bar on the top of the screen.
     * click on Open.
     * Select the stl file to be loaded in the fileDialog that pops up.
-    * The model should then be displayed in the window.
-    
-*Translating the model:  
+    * The model should then be displayed in the window.  
+
+* Translating the model:
     * press t to enter translate mode.
     * scroll up or down with the mousewheel to translate the model in the current
      active axis.
-    * press t again to toggle between the axes.
+    * press t again to toggle between the axes.  
 
-* Rotating the model:  
+* Rotating the model:
     * press r to enter rotate mode.
     * scroll up or down with the mousewheel to rotate the model in the current
      active axis.
-    * press r again to toggle between the axes.
-    
-* Scaling the model:  
+    * press r again to toggle between the axes.  
+
+* Scaling the model:
     * press s to enter scale mode.
     * scroll up or down with the mousewheel to scale the model in the current
      active axis.
-    * press s again to toggle between the axes.
+    * press s again to toggle between the axes.  
 
-* Changing the colour of the model:  
+* Changing the colour of the model:
     * press either 1, 2, 3, 4, or 5.
     * this will switch between 5 preset colours.
-    * the model will then be rendered in the colour preset that you selected.
-    
-* Resetting the Scene:  
+    * the model will then be rendered in the colour preset that you selected.  
+
+* Resetting the Scene:
     * open the File menu from the menu bar at the top of the screen.
     * click on new/reset.
     * this will reload the current model and reset the scene (undoes any changes 
